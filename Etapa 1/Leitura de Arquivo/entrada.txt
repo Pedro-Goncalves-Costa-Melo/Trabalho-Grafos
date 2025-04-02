@@ -1,0 +1,20 @@
+# Número de nós, depósito e capacidade
+4
+2
+10
+
+# Nós com serviço (VR)
+1
+
+# Arestas com serviço (i, j, custo, demanda)
+1 2 3 2 
+
+# Arcos com serviço (i, j, custo, demanda)
+0 1 5 3
+2 0 4 1
+
+# Arestas sem serviço
+2 3 4 0
+
+# Arcos sem serviço
+1 2 2 0
