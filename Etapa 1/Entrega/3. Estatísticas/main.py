@@ -1,5 +1,4 @@
 import networkx as nx
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -79,22 +78,27 @@ def ler_grafo(caminho_arquivo):
 def estatisticas_grafo(grafo):
     G = nx.MultiDiGraph()
     G.add_nodes_from(grafo["V"])
-    for u, v in grafo["arestas"]:
-        G.add_edges_from([(u, v), (v, u)])
+
+    # Adiciona as arestas como duas direções para manter conectividade em grafo dirigido
+    for chave in grafo["arestas"]:
+        u, v = tuple(chave)
+        G.add_edge(u, v)
+        G.add_edge(v, u)
+
     for u, v in grafo["arcos"]:
         G.add_edge(u, v)
 
     stats = {
-        "Vértices": len(grafo["V"]),
-        "Arestas": len(grafo["arestas"]),
-        "Arcos": len(grafo["arcos"]),
-        "Vértices Requeridos": len(grafo["VR"]),
-        "Arestas Requeridas": len(grafo["ER"]),
-        "Arcos Requeridos": len(grafo["AR"]),
-        "Densidade": nx.density(G),
-        "Componentes": nx.number_weakly_connected_components(G),
-        "Grau mínimo": min(dict(G.degree()).values()),
-        "Grau máximo": max(dict(G.degree()).values()),
+        "Quantidade de vértices": len(grafo["V"]),
+        "Quantidade de arestas": len(grafo["arestas"]),
+        "Quantidade de arcos": len(grafo["arcos"]),
+        "Quantidade de vértices requeridos": len(grafo["VR"]),
+        "Quantidade de arestas requeridas": len(grafo["ER"]),
+        "Quantidade de arcos requeridos": len(grafo["AR"]),
+        "Densidade do grafo": nx.density(G),
+        "Componentes conectados": nx.number_weakly_connected_components(G),
+        "Grau mínimo dos vértices": min(dict(G.degree()).values()),
+        "Grau máximo dos vértices": max(dict(G.degree()).values()),
         "Intermediação": nx.betweenness_centrality(G),
         "Caminho médio": (
             nx.average_shortest_path_length(G) if nx.is_weakly_connected(G) else None
@@ -106,7 +110,7 @@ def estatisticas_grafo(grafo):
     return stats
 
 
-# === FLOYD-WARSHALL ===
+# === FLOYD-WARSHALL (opcional para distância/predecessores) ===
 def floyd_warshall(grafo):
     n, INF = len(grafo["V"]), np.inf
     dist = np.full((n, n), INF)
@@ -117,7 +121,7 @@ def floyd_warshall(grafo):
     for (u, v), d in {**grafo["arestas"], **grafo["arcos"]}.items():
         dist[u][v] = d["custo"]
         pred[u][v] = u
-        if isinstance(u, set):
+        if isinstance((u, v), frozenset) or isinstance((v, u), frozenset):
             dist[v][u] = d["custo"]
             pred[v][u] = v
     for k in range(n):
@@ -131,10 +135,12 @@ def floyd_warshall(grafo):
 
 # === EXECUÇÃO PRINCIPAL ===
 grafo = ler_grafo("entrada.txt")
-# visualizar_grafo(grafo)
 estat = estatisticas_grafo(grafo)
+
 for k, v in estat.items():
-    print(f"{k}: {v}")
-dist, pred = floyd_warshall(grafo)
-print("Distâncias:\n", dist)
-print("Predecessores:\n", pred)
+    if isinstance(v, dict):  # para a intermediação
+        print(f"{k}:")
+        for subk, subv in v.items():
+            print(f"  Nó {subk}: {subv}")
+    else:
+        print(f"{k}: {v}")

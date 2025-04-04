@@ -8,7 +8,7 @@ deposito = 0
 Q = 10
 
 # Subconjunto de nós com serviço requerido
-VR = {1}  # exemplo: o nó 1 precisa de serviço
+VR = {1}
 
 # Arestas (vias bidirecionais): representadas com frozenset
 edges = {
@@ -40,3 +40,5 @@ G = {
     'ER': ER,
     'AR': AR,
 }
+
+print(G)

@@ -91,12 +91,28 @@ def visualizar_grafo(grafo):
     for e, dados in grafo["arestas"].items():
         u, v = list(e)
         cor = "red" if dados["requer_serviço"] else "gray"
-        G.add_edge(u, v, custo=dados["custo"], demanda=dados["demanda"], color=cor)
-        G.add_edge(v, u, custo=dados["custo"], demanda=dados["demanda"], color=cor)
+        G.add_edge(
+            u,
+            v,
+            custo=dados["custo"],
+            demanda=dados["demanda"],
+            color=cor,
+            tipo="aresta",
+        )
+        G.add_edge(
+            v,
+            u,
+            custo=dados["custo"],
+            demanda=dados["demanda"],
+            color=cor,
+            tipo="aresta",
+        )
 
     for (u, v), dados in grafo["arcos"].items():
         cor = "red" if dados["requer_serviço"] else "gray"
-        G.add_edge(u, v, custo=dados["custo"], demanda=dados["demanda"], color=cor)
+        G.add_edge(
+            u, v, custo=dados["custo"], demanda=dados["demanda"], color=cor, tipo="arco"
+        )
 
     pos = nx.spring_layout(G)
     plt.figure(figsize=(10, 7))
@@ -120,13 +136,30 @@ def visualizar_grafo(grafo):
         node_size=700,
     )
 
-    # Desenhar nós comuns
+    # Desenhar nós comuns associados a arestas (triângulo)
+    nos_arestas = set()
+    for e in grafo["arestas"]:
+        nos_arestas.update(e)
+    nos_arestas -= {deposito} | nos_com_servico
+
+    # Desenhar nós comuns associados a arcos (círculo azul)
+    nos_arcos = grafo["V"] - {deposito} - nos_com_servico - nos_arestas
+
     nx.draw_networkx_nodes(
         G,
         pos,
-        nodelist=list(outros_nos),
+        nodelist=list(nos_arestas),
         node_color="skyblue",
-        node_shape="o",
+        node_shape="^",  # triângulo para aresta
+        node_size=700,
+    )
+
+    nx.draw_networkx_nodes(
+        G,
+        pos,
+        nodelist=list(nos_arcos),
+        node_color="skyblue",
+        node_shape="o",  # círculo para arco
         node_size=700,
     )
 
@@ -137,17 +170,21 @@ def visualizar_grafo(grafo):
     edge_colors = [d["color"] for _, _, d in G.edges(data=True)]
     nx.draw_networkx_edges(G, pos, edge_color=edge_colors, arrows=True, arrowstyle="->")
 
-    # Rótulos das arestas
-    edge_labels = {
-        (u, v): f"c:{d['custo']} q:{d['demanda']}" for u, v, d in G.edges(data=True)
-    }
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+    # Rótulos das arestas com tipo explícito
+    edge_labels = {}
+    for u, v, d in G.edges(data=True):
+        tipo = d.get("tipo", "arco").upper()
+        edge_labels[(u, v)] = f"{tipo}\nc:{d['custo']} q:{d['demanda']}"
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8, label_pos=0.65)
 
     # === LEGENDA ===
     legenda_elementos = [
         mpatches.Patch(color="orange", label="Depósito (quadrado)"),
-        mpatches.Patch(color="lightgreen", label="Nó com serviço"),
-        mpatches.Patch(color="skyblue", label="Nó comum"),
+        mpatches.Patch(color="lightgreen", label="Nó com serviço (círculo)"),
+        mpatches.Patch(color="skyblue", label="Nó de aresta (triângulo)"),
+        mpatches.Patch(
+            facecolor="skyblue", label="Nó de arco (círculo)", edgecolor="black"
+        ),
         mlines.Line2D([], [], color="red", label="Aresta/arco com serviço"),
         mlines.Line2D([], [], color="gray", label="Aresta/arco sem serviço"),
     ]
