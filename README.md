@@ -1,26 +1,102 @@
-# GCC262 - Grafos e suas aplicações
 
-## Alunos
-Lucas Henrique Lopes Costa
+---
 
-Pedro Gonçalves Costa Melo
+# 🚛 Análise e Modelagem de Grafos para Problemas de Logística
 
-## Etapa 1:
+**Trabalho Prático Final**  
+Disciplinas: GCC218 - Algoritmos em Grafos | GCC262 - Grafos e Suas Aplicações  
+**Universidade Federal de Lavras (UFLA)**  
+*Orientador: Prof. Mayron César O. Moreira*
 
-A primeira fase exigia que criássemos uma estrutura de dados capaz de armazenar grafos. Para a realização dos testes, utilizamos arquivos provenientes da pasta selected_instances, especificamente os arquivos que seguiam a nomenclatura BHW*.bat. Com isso, procedemos à leitura dos dados, incorporando um processo de ETL (Extração, Transformação e Carga), utilizando a linguagem Python. Dessa maneira, basta ajustar o nome do arquivo que descreve o grafo para que ele seja automaticamente inserido na estrutura de dados, permitindo que as operações necessárias sejam realizadas sem maiores ajustes.
+---
 
-Após essa etapa inicial, foi solicitado que apresentássemos análises estatísticas relacionadas aos grafos em questão. Os resultados dessas análises, que seguem abaixo, foram extraídos e compilados de acordo com os dados processados, fornecendo uma visão detalhada sobre as características e os comportamentos dos grafos analisados.
+## 📋 Introdução
 
-1. Quantidade de vértices;
-2. Quantidade de arestas;
-3. Quantidade de arcos;
-4. Quantidade de vértices requeridos;
-5. Quantidade de arestas requeridas;
-6. Quantidade de arcos requeridos;
-7. Densidade do grafo (order strength);
-8. Componentes conectados; (Havia uma observação de que essa resposta não era mais necessária para o desenvolvimento do trabalho)
-9. Grau mínimo dos vértices;
-10. Grau máximo dos vértices;
-11. Intermediação;
-12. Caminho médio;
-13. Diâmetro.
+Este projeto implementa a **Etapa 1** da modelagem de grafos para problemas logísticos, com:
+
+- Representação de **multigrafos mistos** (arestas + arcos)
+- Identificação de vértices/arestas/arcos com serviço requerido
+- Cálculo de estatísticas estruturais e matrizes de caminhos mínimos
+
+---
+
+## 🛠️ Implementação
+
+### Estrutura do Código
+
+```bash
+📦 ra-grafos-logistica/
+├── grafo.py                 # Classe GrafoEtapa1 (leitura, análise e armazenamento)
+├── visualizacao.ipynb       # Visualização com matplotlib
+├── selected_instances/      # Arquivos de entrada (.bat)
+└── README.md
+```
+
+### Funcionalidades Principais
+
+1. **Classe `GrafoEtapa1`**:
+   - `carregarDados()`: Processamento de arquivos `.bat`
+   - `inicializarMatrizAdjacencia()`: Construção da matriz de custos
+   - `calcularDistanciasMinimas()`: Implementação de Floyd-Warshall
+   - `obterCaminhoMinimo()`: Recuperação de rotas ótimas
+
+2. **Análise Descritiva**:
+   - Cálculo de diâmetro, grau médio, densidade
+   - Contagem de vértices/arestas/arcos (totais e requeridos)
+
+3. **Visualização**:
+   - Representação gráfica com `matplotlib`:
+     - **Depósito**: Quadrado laranja
+     - **Vértices requeridos**: Círculos pretos
+     - **Arestas/arcos requeridos**: Linhas vermelhas
+
+---
+
+## 📥 Instalação
+
+```bash
+pip install matplotlib pandas
+```
+
+*Requisito: Python 3.10 ou superior*
+
+---
+
+## 📊 Exemplo de Uso
+
+```python
+from grafo import GrafoEtapa1
+
+# Carregamento de dados
+grafo = GrafoEtapa1()
+grafo.carregarDados("selected_instances/BHW3.bat")
+
+# Geração de estatísticas
+print("Diâmetro:", grafo.calcularDiametro())
+```
+
+---
+
+## ⚠️ Observações Técnicas
+
+1. **Restrições**:
+   - Uso de bibliotecas como `networkx` ou `igraph` **não permitido**
+
+2. **Dados de Entrada**:
+   - Arquivos `.bat` devem ser obtidos no [repositório oficial](https://drive.google.com/file/d/1hlBu7L8OBqrwkVRRlFrVOTvBWKnqITxz/view?usp=drive_link)
+   - Armazenamento na pasta `selected_instances/`
+
+---
+
+## 👥 Autores
+
+- **Lucas Henrique Lopes Costa**  
+- **Pedro Gonçalves Costa Melo**
+
+---
+
+## 📌 Considerações Finais
+
+*Este trabalho é de natureza acadêmica. Qualquer utilização do código deve respeitar as normas de propriedade intelectual da UFLA.*
+
+---
