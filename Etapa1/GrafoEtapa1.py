@@ -304,10 +304,16 @@ def modelarGrafo(grafo):
 
 # === FUNÇÃO DE CÁLCULO DE ESTATÍSTICAS ===
 def calcularEstatisticas(grafo):
+
+    # define o vetor para guardar as estatisticas
     estatisticas = {}
+
+    # veritces, arestas e arcos
     estatisticas["Vértices"] = grafo.numVertices
     estatisticas["Arestas"] = len(grafo.arestas)
     estatisticas["Arcos"] = len(grafo.arcos)
+
+    # verticies arestas e arcos requeridos (VR, ER, AR)
     vertices_requeridos = set()
     for u, v in grafo.arestas:
         vertices_requeridos.add(u)
@@ -322,28 +328,38 @@ def calcularEstatisticas(grafo):
     estatisticas["Arcos Requeridos"] = sum(
         1 for a in grafo.arcos if grafo.arcos[a]["demanda"] > 0
     )
+
     num_arestas = estatisticas["Arestas"]
     num_arcos = estatisticas["Arcos"]
     num_vertices = estatisticas["Vértices"]
+
+    # Calcula densidade
     if num_vertices > 1:
-        if grafo.arcos:
-            densidade = (num_arestas + num_arcos) / (num_vertices * (num_vertices - 1))
+        if grafo.arcos and num_arestas > 0:
+            max_nd = num_vertices * (num_vertices - 1) / 2  
+            max_d = num_vertices * (num_vertices - 1)       
+            max_misto = max_nd + max_d                     
+            densidade = (num_arestas + num_arcos) / max_misto
+        elif grafo.arcos:
+            densidade = num_arcos / (num_vertices * (num_vertices - 1))
         else:
-            densidade = (
-                2 * (num_arestas + num_arcos) / (num_vertices * (num_vertices - 1))
-            )
+            densidade = 2 * num_arestas / (num_vertices * (num_vertices - 1))
     else:
         densidade = 0
     estatisticas["Densidade"] = densidade
+
+    # calcula graus
     graus = {}
     for u, v in grafo.arestas:
         graus[u] = graus.get(u, 0) + 1
         graus[v] = graus.get(v, 0) + 1
     for u, v in grafo.arcos:
         graus[u] = graus.get(u, 0) + 1
-        graus[v] = graus.get(v, 0) + 1
+
     estatisticas["Grau Mínimo"] = min(graus.values()) if graus else 0
     estatisticas["Grau Máximo"] = max(graus.values()) if graus else 0
+
+    # calcula intermediação
     intermediacao = {v: 0 for v in grafo.vertices}
     for u in grafo.vertices:
         for v in grafo.vertices:
@@ -353,6 +369,8 @@ def calcularEstatisticas(grafo):
                     for node in caminho[1:-1]:
                         intermediacao[node] += 1
     estatisticas["Intermediação"] = sum(intermediacao.values())
+
+    # Caminho médio
     soma_distancias = 0
     total_pares = 0
     for u in grafo.vertices:
@@ -365,5 +383,7 @@ def calcularEstatisticas(grafo):
     estatisticas["Caminho Médio"] = (
         soma_distancias / total_pares if total_pares > 0 else 0
     )
+
+    # calcula
     estatisticas["Diâmetro"] = grafo.calcularDiametro()
     return estatisticas
