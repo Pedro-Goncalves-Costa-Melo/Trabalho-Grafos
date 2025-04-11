@@ -94,14 +94,17 @@ class GrafoEtapa1:
         deposito = capacidade = 0
         with open(path, "r") as file:
             section = None
+            skip_header = False
             for line in file:
                 line = line.strip()
                 if not line or line.startswith("the data"):
                     continue
+                
+                # Processa variáveis via regex
                 match = re.match(r"(.*?):\s*(\S+)", line)
                 if match:
                     chave, valor = (
-                        match.group(1).strip().upper(),
+                        match.group(1).strip().upper().replace(" ", ""),
                         match.group(2).strip(),
                     )
                     if chave == "NAME":
@@ -110,6 +113,12 @@ class GrafoEtapa1:
                         capacidade = int(valor)
                     elif chave == "DEPOTNODE":
                         deposito = int(valor)
+                    continue
+                
+                # Identifica seções
+                if line.startswith("ReN."):
+                    section = "NO_REQ"
+                    skip_header = True  # Próxima linha é cabeçalho
                     continue
                 if line.startswith("ReE."):
                     section = "ARESTA_REQ"
@@ -123,13 +132,30 @@ class GrafoEtapa1:
                 if line.startswith("EDGE"):
                     section = "ARESTA_NREQ"
                     continue
+                
+                # Pula linha de cabeçalho após ReN.
+                if skip_header and ("DEMAND" in line or "S. COST" in line):
+                    skip_header = False
+                    continue
+                
                 tokens = line.split()
                 if not tokens:
                     continue
-                if not tokens[0].isdigit():
-                    tokens = tokens[1:]
+                
+                # Remove prefixos não numéricos (como 'N')
+                if not tokens[0][0].isdigit():
+                    tokens[0] = tokens[0][1:] if tokens[0].startswith('N') else tokens[0]
+                    if not tokens[0].isdigit():
+                        tokens = tokens[1:]
+                
                 try:
-                    if section == "ARESTA_REQ":
+                    if section == "NO_REQ":
+                        if tokens[0].isdigit():
+                            node = int(tokens[0])
+                            if node != deposito:
+                                VR.add(node)
+                            V.add(node)
+                    elif section == "ARESTA_REQ":
                         u, v, custo, demanda, _ = map(int, tokens)
                         edges[frozenset({u, v})] = {
                             "custo": custo,
@@ -137,7 +163,7 @@ class GrafoEtapa1:
                             "requerServico": True,
                         }
                         ER.add(frozenset({u, v}))
-                        VR.update([u, v])
+                        V.update([u, v])  # Adiciona aos nós totais, mas não a VR
                     elif section == "ARCO_REQ":
                         u, v, custo, demanda, _ = map(int, tokens)
                         arcs[(u, v)] = {
@@ -146,7 +172,7 @@ class GrafoEtapa1:
                             "requerServico": True,
                         }
                         AR.add((u, v))
-                        VR.update([u, v])
+                        V.update([u, v])  # Adiciona aos nós totais, mas não a VR
                     elif section == "ARESTA_NREQ":
                         u, v, custo = map(int, tokens)
                         edges[frozenset({u, v})] = {
@@ -154,7 +180,7 @@ class GrafoEtapa1:
                             "demanda": 0,
                             "requerServico": False,
                         }
-                        VR.update([u, v])
+                        V.update([u, v])
                     elif section == "ARCO_NREQ":
                         u, v, custo = map(int, tokens)
                         arcs[(u, v)] = {
@@ -162,10 +188,11 @@ class GrafoEtapa1:
                             "demanda": 0,
                             "requerServico": False,
                         }
-                        VR.update([u, v])
+                        V.update([u, v])
                 except ValueError:
                     continue
-        self.inicializar_grafo(VR, deposito, capacidade, edges, arcs, VR, ER, AR)
+        
+        self.inicializar_grafo(V, deposito, capacidade, edges, arcs, VR, ER, AR)
 
     def calcularDistanciasMinimas(self):
         n = self.numVertices
@@ -232,7 +259,7 @@ def modelarGrafo(grafo):
         if v == deposito:
             cor, marcador = "orange", "s"
         elif v in nos_com_servico:
-            cor, marcador = "lightgreen", "o"
+            cor, marcador = "black", "o"
         else:
             cor, marcador = "skyblue", "^"
         plt.plot(x, y, marker=marcador, markersize=10, color=cor)
@@ -264,7 +291,7 @@ def modelarGrafo(grafo):
     plt.axis("off")
     legenda = [
         mpatches.Patch(color="orange", label="Depósito (quadrado)"),
-        mpatches.Patch(color="lightgreen", label="Nó com serviço (círculo)"),
+        mpatches.Patch(color="black", label="Nó com serviço (círculo)"),
         mpatches.Patch(color="skyblue", label="Nó comum (triângulo)"),
         mlines.Line2D([], [], color="red", label="Aresta/arco com serviço"),
         mlines.Line2D([], [], color="gray", label="Aresta/arco sem serviço"),
