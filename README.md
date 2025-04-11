@@ -60,23 +60,6 @@ pip install matplotlib pandas
 
 *Requisito: Python 3.10 ou superior*
 
----
-
-## 📊 Exemplo de Uso
-
-```python
-from grafo import GrafoEtapa1
-
-# Carregamento de dados
-grafo = GrafoEtapa1()
-grafo.carregarDados("selected_instances/BHW3.bat")
-
-# Geração de estatísticas
-print("Diâmetro:", grafo.calcularDiametro())
-```
-
----
-
 ## ⚠️ Observações Técnicas
 
 1. **Restrições**:
