@@ -44,4 +44,4 @@ def formatar_saida(solucao, mapeamento_id, nome_instancia, clocks_ref=0, clocks_
 
 def obter_clocks():
     # Retorna tempo em clocks (simulação baseada em time.monotonic_ns)
-    return time.monotonic_ns() // 1000  # microsegundos (ajuste se necessário)
+    return time.monotonic_ns()
