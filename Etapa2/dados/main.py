@@ -6,7 +6,7 @@ from utils import ler_arquivos_dat, garantir_pasta_saida, formatar_saida, obter_
 
 def main():
     pasta_entrada = "./MCGRP"
-    pasta_saida = "./respostas"
+    pasta_saida = "./G28"
     garantir_pasta_saida(pasta_saida)
     arquivos = ler_arquivos_dat(pasta_entrada)
     for arquivo in arquivos:
