@@ -9,6 +9,7 @@ def main():
     pasta_saida = "./G28"
     garantir_pasta_saida(pasta_saida)
     arquivos = ler_arquivos_dat(pasta_entrada)
+    # print(f"Arquivos encontrados: {arquivos}")
     for arquivo in arquivos:
         nome_instancia = os.path.splitext(os.path.basename(arquivo))[0]
         print(f"Resolvendo {nome_instancia}...")
@@ -17,6 +18,7 @@ def main():
         clk_ini = obter_clocks()
         solucao, mapeamento_id = path_scanning(grafo)
         clk_fim = obter_clocks()
+        # print(f"Solução gerada: {solucao}")
         clocks_ref = clk_fim - clk_ini
         clocks_sol = (
             clk_fim - clk_ini

@@ -1,3 +1,4 @@
+from solucao import Rota
 import heapq
 
 
@@ -57,6 +58,8 @@ def path_scanning(grafo):
     grafo.calcularDistanciasMinimas()
     servicos_pendentes = set()
     servico_info = {}
+
+    # Adiciona serviços de arestas e arcos
     for edge in grafo.ER:
         servicos_pendentes.add(("aresta", tuple(sorted(edge))))
         servico_info[("aresta", tuple(sorted(edge)))] = {
@@ -71,32 +74,45 @@ def path_scanning(grafo):
             "custo": grafo.arcos[arc]["custo"],
             "extremos": arc,
         }
+
+    # Adiciona serviços de nós, excluindo o depósito se ele não tiver demanda requerida
     for node in grafo.VR:
-        servicos_pendentes.add(("nó", node))
-        servico_info[("nó", node)] = {
-            "demanda": 1,
-            "custo": 0,
-            "extremos": (node, node),
-        }
+        # Verifica se o nó tem demanda requerida no arquivo de entrada
+        node_demand = grafo.demanda_nos.get(
+            node, 0
+        )  # Pega a demanda do nó, 0 se não tiver
+        if node_demand > 0:  # Só adiciona como serviço pendente se tiver demanda > 0
+            servicos_pendentes.add(("nó", node))
+            servico_info[("nó", node)] = {
+                "demanda": node_demand,
+                "custo": 0,
+                "extremos": (node, node),
+            }
+
+    # print(f"DEBUG: Capacidade do veículo: {grafo.capacidade}")
     mapeamento_id = construir_mapeamento_servico_id(grafo)
     solucao = []
     deposito = grafo.deposito
 
     while servicos_pendentes:
-        rota = [deposito]
-        carga = 0
-        custo = 0
-        servicos_rota = []
-        detalhes_visitas = []
+        rota_atual = Rota(len(solucao) + 1, deposito)
         no_atual = deposito
-        visitados_este_veiculo = set()
+
         while True:
             melhor_servico = None
             melhor_caminho = None
-            menor_custo = float("inf")
+            menor_custo_caminho = float("inf")
+
             for serv in servicos_pendentes:
                 info = servico_info[serv]
                 extremos = info["extremos"]
+                demanda_servico = info["demanda"]
+
+                if not rota_atual.pode_adicionar_servico(
+                    demanda_servico, grafo.capacidade
+                ):
+                    continue
+
                 if serv[0] == "nó":
                     caminho = grafo.obterCaminhoMinimo(no_atual, extremos[0])
                     dist = grafo.obterDistanciaMinima(no_atual, extremos[0])
@@ -105,80 +121,43 @@ def path_scanning(grafo):
                     dist1 = grafo.obterDistanciaMinima(no_atual, extremos[0])
                     caminho2 = grafo.obterCaminhoMinimo(no_atual, extremos[1])
                     dist2 = grafo.obterDistanciaMinima(no_atual, extremos[1])
+
                     if dist1 <= dist2:
                         caminho = caminho1
                         dist = dist1
-                        chegada = extremos[0]
-                        outro_extremo = extremos[1]
                     else:
                         caminho = caminho2
                         dist = dist2
-                        chegada = extremos[1]
-                        outro_extremo = extremos[0]
-                demanda = info["demanda"]
-                if carga + demanda > grafo.capacidade:
-                    continue
-                if dist < menor_custo:
+
+                if dist < menor_custo_caminho:
                     melhor_servico = serv
                     melhor_caminho = caminho
-                    melhor_extremos = extremos
-                    menor_custo = dist
+                    menor_custo_caminho = dist
+
             if melhor_servico is None:
                 break
-            if melhor_caminho:
-                for i in range(1, len(melhor_caminho)):
-                    custo += grafo.obterDistanciaMinima(
-                        melhor_caminho[i - 1], melhor_caminho[i]
-                    )
-                    rota.append(melhor_caminho[i])
-            info = servico_info[melhor_servico]
-            demanda = info["demanda"]
-            custo += info["custo"]
-            carga += demanda
-            servicos_rota.append(melhor_servico)
-            visitados_este_veiculo.add(melhor_servico)
-            if melhor_servico[0] == "nó":
-                id_servico = mapeamento_id[melhor_servico]
-                detalhes_visitas.append(
-                    ("S", id_servico, melhor_extremos[0], melhor_extremos[0])
-                )
-            elif melhor_servico[0] == "aresta":
-                id_servico = mapeamento_id[melhor_servico]
-                u, v = melhor_extremos
-                if len(rota) >= 2:
-                    if rota[-2] == u and rota[-1] == v:
-                        detalhes_visitas.append(("S", id_servico, u, v))
-                    else:
-                        detalhes_visitas.append(("S", id_servico, v, u))
-                else:
-                    detalhes_visitas.append(("S", id_servico, u, v))
-            elif melhor_servico[0] == "arco":
-                id_servico = mapeamento_id[melhor_servico]
-                u, v = melhor_extremos
-                if len(rota) >= 2:
-                    if rota[-2] == u and rota[-1] == v:
-                        detalhes_visitas.append(("S", id_servico, u, v))
-                    else:
-                        detalhes_visitas.append(("S", id_servico, v, u))
-                else:
-                    detalhes_visitas.append(("S", id_servico, u, v))
+
+            # Adiciona o caminho até o serviço
+            if melhor_caminho and len(melhor_caminho) > 1:
+                rota_atual.adicionar_caminho(melhor_caminho, grafo)
+
+            # Passa o tipo de serviço diretamente do melhor_servico
+            servico_para_adicionar = {
+                "tipo": melhor_servico[0],
+                "extremos": servico_info[melhor_servico]["extremos"],
+                "demanda": servico_info[melhor_servico]["demanda"],
+                "custo": servico_info[melhor_servico]["custo"],
+            }
+            rota_atual.adicionar_servico(servico_para_adicionar, mapeamento_id, grafo)
             servicos_pendentes.remove(melhor_servico)
-            no_atual = rota[-1]
+            no_atual = rota_atual.caminho[-1]
+
+        # Retorna ao depósito
         if no_atual != deposito:
             caminho_volta = grafo.obterCaminhoMinimo(no_atual, deposito)
-            if caminho_volta:
-                for i in range(1, len(caminho_volta)):
-                    custo += grafo.obterDistanciaMinima(
-                        caminho_volta[i - 1], caminho_volta[i]
-                    )
-                    rota.append(caminho_volta[i])
-        solucao.append(
-            {
-                "rota": rota,
-                "servicos_atendidos": servicos_rota,
-                "demanda": carga,
-                "custo": custo,
-                "detalhes": detalhes_visitas,
-            }
-        )
+            if caminho_volta and len(caminho_volta) > 1:
+                rota_atual.adicionar_caminho(caminho_volta, grafo)
+
+        solucao.append(rota_atual)
+
     return solucao, mapeamento_id

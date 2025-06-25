@@ -20,6 +20,7 @@ class GrafoEtapa1:
         self.VR = set()
         self.ER = set()
         self.AR = set()
+        self.demanda_nos = {}  # Adicionado para armazenar a demanda dos nós
         self.adjMatrix = None
         self.matrizPredecessores = None
         self.matrizDistancias = None
@@ -41,9 +42,9 @@ class GrafoEtapa1:
         self.custoTotal = sum(d["custo"] for d in edges.values()) + sum(
             d["custo"] for d in arcs.values()
         )
-        self.inicializarMatrizAdjacencia()
+        self._inicializarMatrizAdjacencia()  # Chamada corrigida
 
-    def inicializarMatrizAdjacencia(self):
+    def _inicializarMatrizAdjacencia(self):  # Renomeado para método privado
         n = self.numVertices
         self.adjMatrix = [[float("inf")] * n for _ in range(n)]
         for i in range(n):
@@ -87,6 +88,7 @@ class GrafoEtapa1:
     def carregarDados(self, path):
         V, edges, arcs, VR, ER, AR = set(), {}, {}, set(), set(), set()
         deposito = capacidade = 0
+        demanda_nos_temp = {}  # Dicionário temporário para armazenar demandas dos nós
         with open(path, "r") as file:
             section = None
             skip_header = False
@@ -137,7 +139,7 @@ class GrafoEtapa1:
                 if not tokens:
                     continue
 
-                # Remove prefixos não numéricos (como 'N')
+                # Remove prefixos não numéricos (como \'N\')
                 if not tokens[0][0].isdigit():
                     tokens[0] = (
                         tokens[0][1:] if tokens[0].startswith("N") else tokens[0]
@@ -149,6 +151,8 @@ class GrafoEtapa1:
                     if section == "NO_REQ":
                         if tokens[0].isdigit():
                             node = int(tokens[0])
+                            demanda = int(tokens[1])  # Captura a demanda do nó
+                            demanda_nos_temp[node] = demanda  # Armazena a demanda
                             if node != deposito:
                                 VR.add(node)
                             V.add(node)
@@ -188,7 +192,7 @@ class GrafoEtapa1:
                         V.update([u, v])
                 except ValueError:
                     continue
-
+        self.demanda_nos = demanda_nos_temp  # Atribui o dicionário de demandas dos nós
         self.inicializar_grafo(V, deposito, capacidade, edges, arcs, VR, ER, AR)
 
     def calcularDistanciasMinimas(self):
