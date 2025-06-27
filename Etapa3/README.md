@@ -4,7 +4,9 @@ Este repositório contém a implementação do trabalho prático final das disci
 
 ## Introdução
 
-O estudo de problemas de logística é fundamental para a otimização do fluxo de bens e serviços, visando maior eficiência e redução de custos. A análise detalhada desses processos permite identificar gargalos, otimizar rotas, gerenciar estoques e implementar tecnologias para aprimorar a tomada de decisões. Este trabalho foca em uma variação do Problema de Roteamento de Veículos em Arcos (CARP - Capacitated Arc Routing Problem), um problema clássico na área de otimização e logística.
+O estudo de problemas de logística é crucial para otimizar o fluxo de bens e serviços, resultando em maior eficiência e redução de custos para empresas e consumidores. A análise detalhada de processos logísticos permite identificar gargalos, melhorar o planejamento de rotas, gerenciar estoques de forma mais eficaz e implementar tecnologias que aprimoram a tomada de decisões.
+
+Este trabalho foca em uma variação do Problema de Roteamento de Veículos em Arcos (CARP - Capacitated Arc Routing Problem), um problema clássico na área de otimização e logística, expandindo-o para incluir também serviços em nós e arcos direcionados.
 
 ## Definição do Problema
 
@@ -27,7 +29,7 @@ O projeto está dividido em etapas, conforme descrito no documento do trabalho. 
 A primeira etapa focou na modelagem do problema, leitura dos dados de entrada e cálculo de estatísticas descritivas do grafo.
 
 **Modelagem:**
-*   Foi criada a classe `GrafoEtapa1` (nos arquivos `Etapa1/GrafoEtapa1.py` e `Etapa2/dados/grafo.py`) para representar o multigrafo.
+*   Foi criada a classe `GrafoEtapa1` para representar o multigrafo.
 *   A classe armazena informações como nome da instância, número de vértices, arestas, arcos, elementos requeridos (vértices, arestas, arcos), capacidade do veículo, depósito, e as estruturas de dados para vértices, arestas e arcos (utilizando sets e dicionários).
 *   Uma matriz de adjacência (`adjMatrix`) é inicializada para representar os custos diretos entre os nós.
 
@@ -37,7 +39,7 @@ A primeira etapa focou na modelagem do problema, leitura dos dados de entrada e 
 *   Os dados lidos populam as estruturas de dados da classe `GrafoEtapa1`.
 
 **Cálculo de Estatísticas:**
-*   A função `calcularEstatisticas(grafo)` (presente em `Etapa1/GrafoEtapa1.py`) calcula diversas métricas sobre o grafo carregado, conforme solicitado no trabalho:
+*   A função `calcularEstatisticas(grafo)` calcula diversas métricas sobre o grafo carregado, conforme solicitado no trabalho:
     *   Quantidade de Vértices (`numVertices`)
     *   Quantidade de Arestas (`numArestas`)
     *   Quantidade de Arcos (`numArcos`)
@@ -54,74 +56,68 @@ A primeira etapa focou na modelagem do problema, leitura dos dados de entrada e 
 *   A classe implementa o algoritmo de Floyd-Warshall na função `calcularDistanciasMinimas()` para calcular a matriz de distâncias mínimas (`matrizDistancias`) e a matriz de predecessores (`matrizPredecessores`) entre todos os pares de vértices.
 *   As funções `obterDistanciaMinima(origem, destino)` e `obterCaminhoMinimo(origem, destino)` utilizam essas matrizes para retornar informações específicas.
 
-**Visualização:**
-*   A função `modelarGrafo(grafo)` (em `Etapa1/GrafoEtapa1.py`) utiliza `matplotlib` para gerar uma visualização gráfica da instância do problema, diferenciando depósito, nós com serviço, nós comuns, arestas/arcos com e sem serviço.
-
 ### Etapa 2: Solução Inicial (Heurística Construtiva)
 
 A segunda etapa focou no desenvolvimento de uma heurística construtiva para gerar uma solução inicial viável para o problema CARP.
 
 **Implementação:**
-*   O código referente a esta etapa encontra-se no diretório `Etapa2/`.
-*   O arquivo `solucao_inicial.py` contém a implementação da heurística *Path Scanning*.
-*   O arquivo `grafo.py` contém a primeira etapa do trabalho que é a modelagem e armazenagem do grafo em uma estrutura de dados.
-*   O arquivo `main.py` orquestra a leitura das instâncias, a execução da heurística e a escrita dos arquivos de solução no formato especificado (Ex.: `sol-nome_instancia.dat`).
-*   O arquivo `utils.py` contém funções auxiliares para leitura de arquivos, formatação da saída e medição de tempo.
+*   O algoritmo implementado é uma variação da heurística *Path Scanning*.
+*   A função `path_scanning(grafo)` constrói rotas sequencialmente, iniciando no depósito e adicionando serviços até que a capacidade do veículo seja atingida.
+*   Para cada serviço pendente, o algoritmo calcula o custo de deslocamento até ele e escolhe o de menor custo.
+*   Após atender todos os serviços possíveis dentro da capacidade, o veículo retorna ao depósito e uma nova rota é iniciada.
 
-**Heurística Path Scanning:**
-*   Esta heurística constrói rotas sequencialmente.
-*   Inicia-se uma nova rota a partir do depósito.
-*   Busca-se o serviço (aresta ou arco requerido) mais próximo do ponto atual da rota que ainda não foi atendido.
-*   O veículo se desloca até o início do serviço pelo caminho mínimo, executa o serviço e se move para o final do serviço.
-*   Este processo é repetido, adicionando serviços à rota atual, até que a capacidade do veículo seja atingida ou não haja mais serviços viáveis para adicionar.
-*   Se a capacidade for atingida, o veículo retorna ao depósito pelo caminho mínimo e uma nova rota é iniciada.
-*   O processo continua até que todos os serviços requeridos sejam atendidos.
+**Estrutura da Solução:**
+*   A classe `Rota` representa uma rota de veículo, armazenando o caminho percorrido, demanda total, custo total e serviços atendidos.
+*   A solução final é uma lista de objetos `Rota`, cada um representando uma rota completa (depósito → serviços → depósito).
+
+### Etapa 3: Métodos de Melhoria (Busca Local)
+
+A terceira etapa focou no aprimoramento da solução inicial através da implementação de um algoritmo de busca local.
+
+**Algoritmo de Melhoria:**
+*   Foi implementado o algoritmo **2-opt** (Two-Opt) como método de busca local para otimizar as rotas geradas na etapa anterior.
+*   O 2-opt é uma técnica clássica de otimização de rotas que consiste em remover duas arestas não adjacentes de uma rota e reconectar os segmentos resultantes de uma maneira diferente, potencialmente reduzindo o custo total.
+
+**Implementação da Busca Local:**
+*   A função `two_opt_single_improvement(solucao_original, grafo)` implementa a estratégia de "primeira melhoria" (first improvement), onde a primeira modificação que resulta em uma redução de custo é imediatamente aceita.
+*   Para cada rota na solução:
+    1. O algoritmo considera todas as possíveis trocas 2-opt (inversão de segmentos do caminho).
+    2. Calcula o custo da nova rota após cada troca potencial.
+    3. Se uma troca resultar em redução de custo, a modificação é aplicada e a função retorna a solução melhorada.
+*   O processo é aplicado a cada rota individualmente, mantendo a atribuição de serviços às rotas originais.
+
+**Integração com a Solução Inicial:**
+*   O arquivo `main.py` orquestra o processo completo:
+    1. Carrega os dados da instância.
+    2. Gera uma solução inicial usando o algoritmo Path Scanning.
+    3. Aplica a otimização 2-opt à solução inicial.
+    4. Calcula e exibe a diferença de custo entre a solução inicial e a otimizada.
+    5. Formata e salva a solução otimizada no formato especificado.
+
+**Melhorias Implementadas:**
+*   A classe `GrafoEtapa1` foi aprimorada para armazenar a demanda dos nós (`demanda_nos`), permitindo um tratamento mais preciso dos serviços em nós.
+*   O método `_inicializarMatrizAdjacencia()` foi renomeado para indicar que é um método privado, seguindo boas práticas de programação.
+*   A função `calcular_custo_total_solucao(solucao)` foi adicionada para facilitar a comparação entre soluções.
+*   O código foi refatorado para melhorar a modularidade e facilitar a manutenção.
 
 ## Como Executar
 
-**Etapa 1 (Análise e Estatísticas):**
-Para utilizar a classe `GrafoEtapa1` e calcular as estatísticas de uma instância:
+**Etapa 3 (Solução Otimizada):**
+Para executar o algoritmo completo (solução inicial + otimização):
 1.  Certifique-se de ter Python instalado.
-2.  Instale as dependências (se houver, como matplotlib): `pip install matplotlib`
-3.  Você pode importar a classe `GrafoEtapa1` em um script Python:
-    ```python
-    from Etapa1.GrafoEtapa1 import GrafoEtapa1, calcularEstatisticas, modelarGrafo
-
-    # Caminho para o arquivo da instância
-    caminho_instancia = 'caminho/para/sua/instancia.dat'
-
-    # Criar e carregar o grafo
-    grafo = GrafoEtapa1()
-    grafo.carregarDados(caminho_instancia)
-
-    # Calcular estatísticas
-    estatisticas = calcularEstatisticas(grafo)
-    print("Estatísticas do Grafo:")
-    for chave, valor in estatisticas.items():
-        print(f"- {chave}: {valor}")
-
-    # Opcional: Visualizar o grafo
-    # modelarGrafo(grafo)
-    ```
-
-**Etapa 2 (Solução Inicial):**
-Para executar a heurística Path Scanning e gerar os arquivos de solução:
-1.  Navegue até o diretório `Etapa2/`.
-2.  Certifique-se de que a pasta com as instâncias (ex: `MCGRP`) está no mesmo nível.
-3.  Execute o script principal:
+2.  Navegue até o diretório `Etapa3/`.
+3.  Coloque as instâncias na pasta `MCGRP/`.
+4.  Execute o script principal:
     ```bash
-    cd Etapa2
     python main.py
     ```
-4.  Os arquivos de solução (Ex.: `sol-*.dat`) serão gerados na pasta `G28` (que é o número do nosso grupo).
+5.  Os arquivos de solução (`sol-*.dat`) serão gerados na pasta `G28/`.
 
 ## Dependências
 
 *   Python 3.x
-*   Matplotlib (para visualização da Etapa 1)
 
 ## Autores
 
 *   Pedro Gonçalves Costa Melo
-* Lucas Henrique Lopes Costa
-
+*   Lucas Henrique Lopes Costa
