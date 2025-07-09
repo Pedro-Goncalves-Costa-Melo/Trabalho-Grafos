@@ -8,7 +8,7 @@ import heapq  # Importa heapq (usado para filas de prioridade, mas não é usado
 def obter_servicos_pendentes(grafo):
     servicos = []
 
-    # Adiciona todos os nós que requerem serviço (VR) como serviços pendentes
+    # Adiciona todos os NÓS que requerem serviço (VR) como serviços pendentes
     for node in grafo.VR:
         servicos.append(
             {
@@ -19,7 +19,7 @@ def obter_servicos_pendentes(grafo):
                 "info": node,  # Informação adicional (id do nó)
             }
         )
-    # Adiciona todas as arestas que requerem serviço (ER)
+    # Adiciona todas as ARESTAS que requerem serviço (ER)
     for edge in grafo.ER:
         dados = grafo.arestas[edge]  # Busca os dados da aresta (custo, demanda...)
         u, v = tuple(edge)
@@ -34,7 +34,7 @@ def obter_servicos_pendentes(grafo):
                 "info": edge,  # Informação adicional (frozenset dos nós)
             }
         )
-    # Adiciona todos os arcos que requerem serviço (AR)
+    # Adiciona todos os ARCOS que requerem serviço (AR)
     for arc in grafo.AR:
         dados = grafo.arcos[arc]  # Busca os dados do arco (custo, demanda...)
         u, v = arc
@@ -143,7 +143,7 @@ def path_scanning(grafo):
                 ):
                     continue
 
-                # Para nós: caminho e custo direto até o nó
+                # Para nós: caminho e custo direto até o nó - Define qual caminho vai usar
                 if serv[0] == "nó":
                     caminho = grafo.obterCaminhoMinimo(no_atual, extremos[0])
                     dist = grafo.obterDistanciaMinima(no_atual, extremos[0])

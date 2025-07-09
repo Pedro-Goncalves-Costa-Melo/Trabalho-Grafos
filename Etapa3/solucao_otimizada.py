@@ -63,25 +63,25 @@ def two_opt_single_improvement(solucao_original, grafo):
     return solucao_original
 
 
-# Função que executa o 2-opt de forma iterativa até não encontrar mais melhorias acima do limiar
-def two_opt_iterativo(solucao_inicial, grafo, limiar=0.1):
-    """
-    Aplica 2-opt iterativamente até não encontrar mais melhoria acima do limiar.
-    limiar: mínima diferença de custo para aceitar a nova solução (float).
-    """
-    solucao_atual = copy.deepcopy(solucao_inicial)
-    custo_atual = calcular_custo_total_solucao(solucao_atual)
+# # Função que executa o 2-opt de forma iterativa até não encontrar mais melhorias acima do limiar
+# def two_opt_iterativo(solucao_inicial, grafo, limiar=0.1):
+#     """
+#     Aplica 2-opt iterativamente até não encontrar mais melhoria acima do limiar.
+#     limiar: mínima diferença de custo para aceitar a nova solução (float).
+#     """
+#     solucao_atual = copy.deepcopy(solucao_inicial)
+#     custo_atual = calcular_custo_total_solucao(solucao_atual)
 
-    while True:
-        solucao_melhorada = two_opt_single_improvement(solucao_atual, grafo, limiar)
-        custo_melhorado = calcular_custo_total_solucao(solucao_melhorada)
+#     while True:
+#         solucao_melhorada = two_opt_single_improvement(solucao_atual, grafo, limiar)
+#         custo_melhorado = calcular_custo_total_solucao(solucao_melhorada)
 
-        # Se não melhorou nada ou a melhoria é menor que o limiar, termina
-        if custo_atual - custo_melhorado <= limiar:
-            break
+#         # Se não melhorou nada ou a melhoria é menor que o limiar, termina
+#         if custo_atual - custo_melhorado <= limiar:
+#             break
 
-        # Aceita a melhoria e tenta de novo
-        solucao_atual = solucao_melhorada
-        custo_atual = custo_melhorado
+#         # Aceita a melhoria e tenta de novo
+#         solucao_atual = solucao_melhorada
+#         custo_atual = custo_melhorado
 
-    return solucao_atual
+#     return solucao_atual
