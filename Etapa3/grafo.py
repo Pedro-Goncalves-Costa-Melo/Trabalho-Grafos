@@ -244,7 +244,7 @@ class GrafoEtapa1:
             self.calcularDistanciasMinimas()
         return self.matrizDistancias[origem - 1][destino - 1]
 
-    # Retorna o caminho mínimo (lista de nós) entre dois nós
+    # Retorna o caminho mínimo (lista de nós) entre dois nós - Precisa dos predecessores
     def obterCaminhoMinimo(self, origem, destino):
         if not hasattr(self, "matrizPredecessores") or self.matrizPredecessores is None:
             self.calcularDistanciasMinimas()

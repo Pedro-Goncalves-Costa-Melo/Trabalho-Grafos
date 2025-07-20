@@ -138,9 +138,7 @@ def path_scanning(grafo):
                 demanda_servico = info["demanda"]
 
                 # Só pode adicionar serviço se não exceder capacidade da rota
-                if not rota_atual.pode_adicionar_servico(
-                    demanda_servico, grafo.capacidade
-                ):
+                if not rota_atual.pode_adicionar_servico(demanda_servico, grafo.capacidade):
                     continue
 
                 # Para nós: caminho e custo direto até o nó - Define qual caminho vai usar
@@ -168,9 +166,9 @@ def path_scanning(grafo):
                     melhor_caminho = caminho
                     menor_custo_caminho = dist
 
-            # Se não encontrou nenhum serviço possível (capacidade cheia ou todos longe demais), termina a rota
+           # Se não encontrou nenhum serviço possível (capacidade cheia ou todos longe demais), termina a rota
             if melhor_servico is None:
-                break
+                break 
 
             # Adiciona ao caminho da rota o trajeto até o serviço escolhido
             if melhor_caminho and len(melhor_caminho) > 1:
